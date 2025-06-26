@@ -1,0 +1,35 @@
+
+
+def main():
+    print("Calculator")
+    print("Choose operator: +, -")
+
+    userOperator = input("")
+
+    if userOperator == "+":
+        addition()
+    elif userOperator == "-":
+        subtraction()
+    
+
+
+def addition():
+    print("")
+    print("What two numbers will you compute?")
+    num1 = int(input("1st number: "))
+    num2 = int(input("2nd number: "))
+    print("")
+    print("")
+    result = (num1 + num2)
+    print("Result:", result)
+
+def subtraction():
+    print("")
+    print("What two numbers will you compute?")
+    num1 = int(input("1st number: "))
+    num2 = int(input("2nd number: "))
+    print("")
+    print("")
+    result = (num1  num2)
+    print("Result:", result)
+main()
