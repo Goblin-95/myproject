@@ -13,5 +13,5 @@ for i in range(100):
     line.set_ydata(y)           # Update the line with new data
     plt.pause(0.05)             # Pause briefly and refresh the plot
 
-plt.ioff()  # Optional: turn off interactive mode
+plt.ioff()
 plt.show()  # Final display
