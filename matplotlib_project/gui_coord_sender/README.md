@@ -1,51 +1,38 @@
-## Coordinate GUI Point & Click ##
-
-This project is a Python-based graphical interface that animates an object moving across a canvas. The object can be moved either by clicking on the canvas or by receiving target coordinates from a separate script running in the background. The GUI is built using Tkinter and Matplotlib, with real-time animation support.
+This project is a Python-based graphical interface that animates an object moving across a canvas. The object can be moved either by clicking on the canvas or by receiving live target coordinates from a separate sender script running in the background. The GUI is built using Tkinter and Matplotlib, and now includes size, speed, background, and character selection controls.
 
 How to use:
 
-Step 1: Run the GUI Receiver script to open the visual interface, it will now begin to listen for the incoming data
-Step 2: Open a new terminal
-Step 3: Run the Animating Sender script using the new terminal and the path of the file
-as so : python "C:\Users\georg\python_projects_all\matplotlibPROJECT\matplotlib_project\gui_coord_sender\animating_sender.py"
+Step 1: Open a terminal window and run the Animating Sender script first
 
-After these steps, you can now click on the interface and the object will move to your target and will continue to do so.
+Step 2: In a second terminal, run the GUI Receiver script to open the visual interface.
+
+Once both are running, you can now click on the interface. The object will smoothly move to the point you clicked, continuing to move as you click more. You can also change the speed and size of the object using the controls on the right.
 
 
 What each script does:
 
-gui_receiver.py launches a visual interface where:
-
-- Users can click to move an image/object on a background.
-- Users can choose preset backgrounds and characters.
-- The object animates between target points.
-- Starts a socket listener in the background to receive coordinate data from another script.
-- When it receives data, it queues the coordinates and animates the object to move there smoothly.
-
-animating_sender.py is asimple script that:
-
-- Connects to the GUI over a local network socket (127.0.0.1):
-- Sends a predefined list of target coordinates (e.g., (10, 10), (30, 30), (70, 70)) to the GUI.
-- Simulates an external controller or input source sending real-time movement instructions.
-
+- gui_receiver.py launches a visual interface where:
+- You can click anywhere to send a target location to the sender.
+- Users can choose preset backgrounds and characters using dropdowns.
+- There is a live slider for object size.
+- A dropdown lets you select animation speed: slow, normal, or fast.
+- A “Center Character” button resets the object to the center of the canvas.
+- Starts a background thread to listen for live position updates from the sender.
+- When it receives position data, it moves the object smoothly using imshow.
+- animating_sender.py is a background script that:
+- Connects to the GUI over a local socket (127.0.0.1).
+- Listens for coordinate messages like "x,y,speed".
+- Animates the object by sending incremental updates from its current position to the new target.
+- Adjusts speed by changing how many steps and how fast each one is sent:
+- Slow = 70 steps with delay
+- Normal = 50 steps
+- Fast = 30 steps with shorter delay
 
 How the scripts communicate:
 
-The communication between the two scripts is done through Python sockets on the same machine (localhost).
-The GUI (gui_script.py) opens a socket and waits for incoming connections on a specific port (e.g., 65432).
-The sender script connects to that port and sends coordinate strings like "10,10", "30,30", etc.
-
-When the GUI receives a new coordinate:
-
-- It converts the string to a pair of floats.
-- It queues that position.
-- It animates the object to move there.
-
-
-Notes:
-
-- Make sure both scripts are using the same IP address and port number (both should match).
-- Run the GUI before the sender, or the sender will fail to connect.
-- You must have the required images in the proper backgrounds/ and objects/ folders as referenced in the GUI code.
-- Requires Python libraries: matplotlib, tkinter, PIL (Pillow), and numpy. 
-
+- The two scripts use Python sockets over localhost:
+- The sender connects first and waits.
+- When the GUI launches, it accepts the sender's connection.
+- When the user clicks, the GUI sends a message like "40.3,60.7,fast" to the sender.
+- The sender processes that and sends back a series of intermediate positions.
+- The GUI listens for those and animates the object’s movement accordingly.
