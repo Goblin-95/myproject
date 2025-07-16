@@ -1,5 +1,6 @@
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from staticmap import StaticMap, CircleMarker
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
@@ -56,10 +57,15 @@ mainFrame.pack(fill=tk.BOTH, expand=True)
 canvas = FigureCanvasTkAgg(fig, master=mainFrame)
 canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+# Define options FIRST
+bg_options = ["Grass", "Sky", "GPS Map"]
+char_options = ["Person", "Dino"]
+
 # Create control frame on the right side inside mainFrame
 controlFrame = tk.Frame(mainFrame)
 controlFrame.pack(side=tk.RIGHT, fill=tk.Y, padx=10, pady=10)
 
+# Then the control variables
 bgVar = tk.StringVar(value="Select Background")
 charVar = tk.StringVar(value="Select Character")
 sizeVar = tk.IntVar(value=imgSize)  # initial size = 10
@@ -67,9 +73,6 @@ speedVar = tk.StringVar(value="normal")
 
 tk.Label(controlFrame, text="Animation Speed:").pack(anchor="w")
 tk.OptionMenu(controlFrame, speedVar, "slow", "normal", "fast").pack(fill=tk.X)
-
-bg_options = ["Grass", "Sky"]
-char_options = ["Person", "Dino"]
 
 tk.Label(controlFrame, text="Choose Background:").pack(anchor="w")
 bg_menu = tk.OptionMenu(controlFrame, bgVar, *bg_options)
@@ -79,27 +82,49 @@ tk.Label(controlFrame, text="Choose Character:").pack(anchor="w")
 char_menu = tk.OptionMenu(controlFrame, charVar, *char_options)
 char_menu.pack(fill=tk.X)
 
+tk.Label(controlFrame, text="GPS Coordinates (lat,lon):").pack(anchor="w")
+gpsEntry = tk.Entry(controlFrame)
+gpsEntry.pack(fill=tk.X)
+print("[DEBUG] GPS entry field created")
+
+
+
 
 def applyPresets():
     global background_path, object_path, presets_applied
     bg = bgVar.get()
     char = charVar.get()
 
+    # Background selection
     if bg == "Grass":
         background_path = os.path.join(baseDir, "backgrounds", "grass backgroundusable.jpg")
-    if bg == "Sky":
+    elif bg == "Sky":
         background_path = os.path.join(baseDir, "backgrounds", "sky background.png")
-    # add more backgrounds if needed
+    elif bg == "GPS Map":
+        gps_text = gpsEntry.get()
+        try:
+            lat_str, lon_str = gps_text.split(',')
+            lat, lon = float(lat_str.strip()), float(lon_str.strip())
+        except Exception:
+            print("[GUI] Invalid GPS input. Defaulting to San Francisco.")
+            lat, lon = 37.7749, -122.4194  # default: SF
 
+        # Generate the map and save temporarily
+        bgImgArray = get_map_as_np_array(lat, lon)
+        temp_path = os.path.join(baseDir, "temp_map.png")
+        plt.imsave(temp_path, bgImgArray)
+        background_path = temp_path
+
+    # Character selection
     if char == "Person":
         object_path = os.path.join(baseDir, "objects", "person.webp")
-    if char == "Dino":
+    elif char == "Dino":
         object_path = os.path.join(baseDir, "objects", "dino.png")
-        
-    # add more characters if needed
 
     presets_applied = True
-    loadScene()  # Only now load the scene
+    loadScene()
+
+
 
 apply_button = tk.Button(controlFrame, text="Apply Presets", command=applyPresets)
 apply_button.pack(fill=tk.X, pady=10)
@@ -135,6 +160,18 @@ def loadScene():
         currentPos[1], currentPos[1] + imgSize
     ])
     canvas.draw()
+
+def generate_map_image(lat, lon, zoom=14, size=(600, 600)):
+    m = StaticMap(size[0], size[1])
+    marker = CircleMarker((lon, lat), 'red', 12)
+    m.add_marker(marker)
+    image = m.render(zoom=zoom)
+    return image  # PIL Image object
+
+def get_map_as_np_array(lat, lon, zoom=14):
+    img = generate_map_image(lat, lon, zoom=zoom)
+    return np.array(img)
+
 
 def updatePosition(x, y):
     global currentPos
