@@ -87,8 +87,10 @@ gpsEntry = tk.Entry(controlFrame)
 gpsEntry.pack(fill=tk.X)
 print("[DEBUG] GPS entry field created")
 
-
-
+tk.Label(controlFrame, text="GPS Zoom Level:").pack(anchor="w")
+zoomVar = tk.IntVar(value=14)  # Default zoom level
+tk.Scale(controlFrame, from_=10, to=20, orient=tk.HORIZONTAL,
+         variable=zoomVar).pack(fill=tk.X, pady=5)
 
 def applyPresets():
     global background_path, object_path, presets_applied
@@ -98,8 +100,10 @@ def applyPresets():
     # Background selection
     if bg == "Grass":
         background_path = os.path.join(baseDir, "backgrounds", "grass backgroundusable.jpg")
+
     elif bg == "Sky":
         background_path = os.path.join(baseDir, "backgrounds", "sky background.png")
+
     elif bg == "GPS Map":
         gps_text = gpsEntry.get()
         try:
@@ -107,10 +111,10 @@ def applyPresets():
             lat, lon = float(lat_str.strip()), float(lon_str.strip())
         except Exception:
             print("[GUI] Invalid GPS input. Defaulting to San Francisco.")
-            lat, lon = 37.7749, -122.4194  # default: SF
+            lat, lon = 37.7749, -122.4194
 
-        # Generate the map and save temporarily
-        bgImgArray = get_map_as_np_array(lat, lon)
+        zoom_level = zoomVar.get()  # <<< NEW LINE: Get zoom level from control
+        bgImgArray = get_map_as_np_array(lat, lon, zoom=zoom_level)  # <<< Use zoom in function
         temp_path = os.path.join(baseDir, "temp_map.png")
         plt.imsave(temp_path, bgImgArray)
         background_path = temp_path
@@ -123,6 +127,7 @@ def applyPresets():
 
     presets_applied = True
     loadScene()
+
 
 
 
