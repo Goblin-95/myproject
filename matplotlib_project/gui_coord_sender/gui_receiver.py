@@ -83,6 +83,11 @@ tk.Label(controlFrame, text="GPS Coordinates (lat,lon):").pack(anchor="w")
 gpsEntry = tk.Entry(controlFrame)
 gpsEntry.pack(fill=tk.X)
 
+gpsEntry.insert(0, "41.8755, -87.6497") 
+
+tk.Label(controlFrame, text="📍 TurtleBot GPS Mode", font=("Arial", 8), fg="blue").pack(anchor="w")
+tk.Label(controlFrame, text="Use coordinates above", font=("Arial", 8), fg="gray").pack(anchor="w")
+
 print("[DEBUG] GPS entry field created")
 
 tk.Label(controlFrame, text="GPS Zoom Level:").pack(anchor="w")
